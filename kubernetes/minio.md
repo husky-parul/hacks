@@ -1,0 +1,1 @@
+# Getting started with minio using helm chart
