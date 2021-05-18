@@ -2,6 +2,41 @@
 ``OTECOL`` in ``cri-o``
 =======================
 
+Install cri-o from source
+=========================
+For Fedora,
+
+.. code-block:: bash
+
+  yum install -y \
+  containers-common \
+  device-mapper-devel \
+  git \
+  glib2-devel \
+  glibc-devel \
+  glibc-static \
+  go \
+  gpgme-devel \
+  libassuan-devel \
+  libgpg-error-devel \
+  libseccomp-devel \
+  libselinux-devel \
+  pkgconfig \
+  make \
+  runc
+
+
+Get the source code
+===================
+
+.. code-block:: bash
+  git clone https://github.com/cri-o/cri-o
+  cd cri-o
+
+  make BUILDTAGS=""  #if you do not want to build CRI-O with seccomp support 
+  sudo make install
+
+
 Start stop ``cri-o``
 ====================
 
@@ -24,6 +59,31 @@ Running Kubernetes with ``kubeadm``
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
+* Get the CIDR value
+
+.. code-block:: bash
+
+  {
+    "cniVersion": "0.3.1",
+    "name": "crio",
+    "type": "bridge",
+    "bridge": "cni0",
+    "isGateway": true,
+    "ipMasq": true,
+    "hairpinMode": true,
+    "ipam": {
+        "type": "host-local",
+        "routes": [
+            { "dst": "0.0.0.0/0" },
+            { "dst": "1100:200::1/24" }
+        ],
+        "ranges": [
+            [{ "subnet": "10.85.0.0/16" }],
+            [{ "subnet": "1100:200::/24" }]
+        ]
+    }
+  }
+
 * Install CRDS and Calico networking
 
 .. code-block:: bash
@@ -31,7 +91,7 @@ Running Kubernetes with ``kubeadm``
 
   kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
 
-  cat >>EOF kubectl create -f -
+  cat <<EOF | kubectl create -f -
 
   # This section includes base Calico installation configuration.
   # For more information, see: https://docs.projectcalico.org/v3.18/reference/installation/api#operator.tigera.io/v1.Installation
@@ -49,6 +109,7 @@ Running Kubernetes with ``kubeadm``
         encapsulation: VXLANCrossSubnet
         natOutgoing: Enabled
         nodeSelector: all()
+  EOF
 
 
 .. code-block:: bash
